@@ -20,8 +20,8 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker build -t ghcr.io/${{ github.repository_owner }}/AWS_GitHub_projects:$IMAGE_TAG .
-          docker push ghcr.io/${{ github.repository_owner }}/AWS_GitHub_projects:$IMAGE_TAG
+          docker build -t ghcr.io/${{ github.repository_owner }}/aws_github_projects:$IMAGE_TAG .
+          docker push ghcr.io/${{ github.repository_owner }}/aws_github_projects:$IMAGE_TAG
 
   deploy-dev:
     runs-on: ubuntu-latest
