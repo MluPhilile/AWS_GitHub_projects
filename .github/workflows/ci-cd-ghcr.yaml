@@ -23,7 +23,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          #REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker build -t ghcr.io/mluphilile/aws_github_projects:$IMAGE_TAG .
           docker push ghcr.io/mluphilile/aws_github_projects:$IMAGE_TAG
 
@@ -37,6 +37,28 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
+       # 1. Download the current active task definition
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition dev-service --query taskDefinition > task-definition.json
+
+      # 2. Update the image URI in the task definition template
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: Main_pipeline # Replace with your actual container name in ECS
+          image: ghcr.io/mluphilile/aws_github_projects:${{ github.sha }}      
+
+      # 3. Deploy the updated task definition to ECS
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: dev-service
+          cluster: dev-cluster
+          wait-for-service-stability: true
 
       - name: Deploy to Dev ECS
         run: |
@@ -55,6 +77,29 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-north-1
+
+       # 1. Download the current active task definition
+      - name: Download task definition
+        run: |
+          aws ecs describe-task-definition --task-definition staging-service --query taskDefinition > task-definition.json
+
+      # 2. Update the image URI in the task definition template
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: Main_pipeline # Replace with your actual container name in ECS
+          image: ghcr.io/mluphilile/aws_github_projects:${{ github.sha }}      
+
+      # 3. Deploy the updated task definition to ECS
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: staging-service
+          cluster: staging-cluster
+          wait-for-service-stability: true
 
       - name: Deploy to Staging ECS
         run: |
