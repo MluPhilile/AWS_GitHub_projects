@@ -43,7 +43,7 @@ jobs:
           aws ecs update-service \
             --cluster dev-cluster \
             --service dev-service \
- #           --force-new-deployment
+            --force-new-deployment
 
   deploy-staging:
     runs-on: ubuntu-latest
