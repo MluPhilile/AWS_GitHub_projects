@@ -40,7 +40,7 @@ jobs:
        # 1. Download the current active task definition
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition dev-service --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ci_cd_pipeline_dev_multi_env --query taskDefinition > task-definition.json
 
       # 2. Update the image URI in the task definition template
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -81,7 +81,7 @@ jobs:
        # 1. Download the current active task definition
       - name: Download task definition
         run: |
-          aws ecs describe-task-definition --task-definition staging-service --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ci_cd_pipeline_dev_multi_env --query taskDefinition > task-definition.json
 
       # 2. Update the image URI in the task definition template
       - name: Fill in the new image ID in the Amazon ECS task definition
