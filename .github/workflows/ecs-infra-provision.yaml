@@ -25,4 +25,4 @@ jobs:
           aws cloudformation deploy \
             --stack-name ecs-infra \
             --template-file aws-infra/ecs-infrastructure.yaml \
-            --capabilities CAPABILITY_IAM
+            --capabilities CAPABILITY_NAMED_IAM
