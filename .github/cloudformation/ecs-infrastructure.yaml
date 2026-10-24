@@ -4,15 +4,15 @@ Description: ECS Clusters, Task Definitions, and Services
 Resources:
   DevCluster:
     Type: AWS::ECS::Cluster
-    properties:
-      ClustersName: dev-cluster
+    Properties:
+      ClusterName: dev-cluster
 
   StagingCluster:
     Type: AWS::ECS::Cluster
-    properties:
-      ClustersName: staging-cluster
+    Properties:
+      ClusterName: staging-cluster
   
-  TaskExcutionRole:
+  TaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: ecsTaskExecutionRole
