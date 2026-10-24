@@ -44,7 +44,7 @@ jobs:
         run: |
           aws cloudformation deploy \
             --stack-name ecs-infra \
-            --template-file ecs-infrastructure.yml \
+            --template-file .github/cloudformation/ecs-infrastructure.yml \
             --capabilities CAPABILITY_IAM
 
   deploy-dev:
