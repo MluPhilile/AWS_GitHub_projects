@@ -44,6 +44,7 @@ Resources:
                 token.actions.githubusercontent.com:sub: !Sub 'repo:${GitHubOrgOrUser}/${GitHubRepositoryName}:*'
 
       # 3. Fine-Grained Least-Privilege Policies for Infrastructure and Container Operations
+      # 3. Fine-Grained Least-Privilege Policies for Infrastructure and Container Operations
       Policies:
         - PolicyName: GitHubActionsDeploymentPolicy
           PolicyDocument:
@@ -67,12 +68,15 @@ Resources:
                 Action:
                   - cloudformation:CreateStack
                   - cloudformation:UpdateStack
+                  - cloudformation:DeleteStack
                   - cloudformation:DescribeStacks
                   - cloudformation:DescribeStackEvents
                   - cloudformation:DescribeStackResources
                   - cloudformation:GetTemplate
                   - cloudformation:ValidateTemplate
-                Resource: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/ecs-infra*'
+                Resource: 
+                  - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/ecs-infra*'
+                  - !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/oidc-provider-infra*'
                             
                # GLOBAL TAGGING PERMISSIONS (Fixes the UnauthorizedTaggingOperation)
               - Effect: Allow
@@ -85,28 +89,73 @@ Resources:
                   - iam:UntagRole
                 Resource: '*'
 
-              # Fine-Grained Infrastructure Resource Manipulation via Pipeline
+              # Complete VPC Infrastructure Permissions (Fixes the ec2:AllocateAddress error and builds out the VPC)
               - Effect: Allow
                 Action:
-                  - ecs:CreateCluster
-                  - ecs:DescribeClusters
-                  - ecs:UpdateService
-                  - ecs:DescribeServices
-                  - ecs:RegisterTaskDefinition
-                  - ecs:DescribeTaskDefinition
-                  - iam:PassRole
-                  - iam:CreateRole            # Added to ensure it can build your TaskExecutionRole
-                  - iam:DeleteRole            # Added for clean cleanups
-                  - iam:GetRole   
-                  - iam:AttachRolePolicy
-                  - iam:DetachRolePolicy               
+                  - ec2:CreateVpc
+                  - ec2:DeleteVpc
+                  - ec2:ModifyVpcAttribute
+                  - ec2:CreateSubnet
+                  - ec2:DeleteSubnet
+                  - ec2:ModifySubnetAttribute
+                  - ec2:CreateInternetGateway
+                  - ec2:DeleteInternetGateway
+                  - ec2:AttachInternetGateway
+                  - ec2:DetachInternetGateway
+                  - ec2:CreateRouteTable
+                  - ec2:DeleteRouteTable
+                  - ec2:CreateRoute
+                  - ec2:DeleteRoute
+                  - ec2:AssociateRouteTable
+                  - ec2:DisassociateRouteTable
+                  - ec2:AllocateAddress
+                  - ec2:ReleaseAddress
+                  - ec2:CreateNatGateway
+                  - ec2:DeleteNatGateway
+                  - ec2:CreateSecurityGroup
+                  - ec2:DeleteSecurityGroup
+                  - ec2:AuthorizeSecurityGroupIngress
+                  - ec2:RevokeSecurityGroupIngress
                   - ec2:DescribeSubnets
                   - ec2:DescribeSecurityGroups
                   - ec2:DescribeVpcs
-                  - elasticloadbalancing:DescribeLoadBalancers
-                  - elasticloadbalancing:DescribeTargetGroups
-                  - elasticloadbalancing:DescribeListeners
+                  - ec2:DescribeInternetGateways
+                  - ec2:DescribeRouteTables
+                  - ec2:DescribeAddresses
+                  - ec2:DescribeNatGateways
                 Resource: '*'
+
+              # Fine-Grained Service Manipulation via Pipeline
+              - Effect: Allow
+                Action:
+                  - ecs:CreateCluster
+                  - ecs:DeleteCluster
+                  - ecs:DescribeClusters
+                  - ecs:CreateService
+                  - ecs:DeleteService
+                  - ecs:UpdateService
+                  - ecs:DescribeServices
+                  - ecs:RegisterTaskDefinition
+                  - ecs:DeregisterTaskDefinition
+                  - ecs:DescribeTaskDefinition
+                  - iam:PassRole
+                  - iam:CreateRole            
+                  - iam:DeleteRole            
+                  - iam:GetRole   
+                  - iam:AttachRolePolicy
+                  - iam:DetachRolePolicy               
+                  - elasticloadbalancing:CreateLoadBalancer
+                  - elasticloadbalancing:DeleteLoadBalancer
+                  - elasticloadbalancing:DescribeLoadBalancers
+                  - elasticloadbalancing:CreateTargetGroup
+                  - elasticloadbalancing:DeleteTargetGroup
+                  - elasticloadbalancing:DescribeTargetGroups
+                  - elasticloadbalancing:CreateListener
+                  - elasticloadbalancing:DeleteListener
+                  - elasticloadbalancing:DescribeListeners
+                  - elasticloadbalancing:ModifyTargetGroupAttributes
+                Resource: '*'
+
 
 Outputs:
   RoleArn:
