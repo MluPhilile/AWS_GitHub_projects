@@ -1,0 +1,42 @@
+name: ECS Infrastructure Provisioning
+
+run: |
+    aws cloudformation deploy \
+      --stack-name ecs-infra \
+      --template-file aws-infra/ecs-secure-infrastructure.yaml \
+      --capabilities CAPABILITY_NAMED_IAM \
+      --region eu-north-1
+        echo "=== DEPLOYMENT FAILED: FETCHING CLOUDFORMATION LOGS ===" && \
+        aws cloudformation describe-stack-events \
+           --stack-name ecs-infra \
+           --region eu-north-1 \
+           --query "StackEvents[?ResourceStatus=='CREATE_FAILED'].{Resource:LogicalResourceId,Type:ResourceType,Reason:ResourceStatusReason}" \
+           --output table && \
+        exit 1 \
+      )
+# on:
+#   workflow_dispatch:   # run manually when needed
+
+# jobs:
+#   provision:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: eu-north-1
+
+#       - name: Debug file path
+#         run: ls -R
+
+#       - name: Deploy ECS Infrastructure
+#         run: |
+#           aws cloudformation deploy \
+#             --stack-name ecs-infra \
+#             --template-file aws-infra/ecs-secure-infrastructure.yaml \
+#             --capabilities CAPABILITY_NAMED_IAM
