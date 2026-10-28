@@ -171,6 +171,11 @@ Resources:
 
   AlbTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: 
+      - PublicSubnet1Association
+      - PublicSubnet2Association
+      - PrivateSubnet1Association
+      - PrivateSubnet2Association
     Properties:
       Name: ecs-app-target-group
       Port: 80
