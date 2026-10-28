@@ -35,6 +35,7 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
+  # --- Public Subnets ---
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -47,10 +48,11 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1b
+      AvailabilityZone: eu-north-1c  # <--- CHANGED FROM eu-north-1b TO eu-north-1c
       CidrBlock: !Ref PublicSubnet2Cidr
       MapPublicIpOnLaunch: true
 
+  # --- Private Subnets ---
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -63,10 +65,10 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1b
+      AvailabilityZone: eu-north-1c  # <--- CHANGED FROM eu-north-1b TO eu-north-1c
       CidrBlock: !Ref PrivateSubnet2Cidr
       MapPublicIpOnLaunch: false
-
+      
   NatEip1:
     Type: AWS::EC2::EIP
     DependsOn: VpcGatewayAttachment
