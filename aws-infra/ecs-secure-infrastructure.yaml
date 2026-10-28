@@ -277,4 +277,3 @@ Outputs:
   WebApplicationUrl:
     Description: The public entry-point URL for your secure network deployment
     Value: !Sub 'http://${AppLoadBalancer.DNSName}'
-Use code with caution.
