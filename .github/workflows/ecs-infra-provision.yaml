@@ -20,6 +20,8 @@ jobs:
       - name: Deploy ECS Infrastructure
         run: |
           aws cloudformation deploy \
+            --stack-name oidc-provider-name \
+            --template-file aws-infra/github-oidc-iam-role.yaml \
             --stack-name ecs-infra \
             --template-file aws-infra/ecs-secure-infrastructure.yaml \
             --capabilities CAPABILITY_NAMED_IAM \
