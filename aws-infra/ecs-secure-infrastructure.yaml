@@ -4,23 +4,19 @@ Description: AWS ECS Infrastructure Upgrade - Secure Network Subnets and Applica
 Parameters:
   VpcCidr:
     Type: String
-    Default: 10.0.0.0/16
-
+    Default: 172.16.0.0/16   # Changed to a fresh network space to bypass cached collisions
   PublicSubnet1Cidr:
     Type: String
-    Default: 10.0.1.0/24
-
+    Default: 172.16.1.0/24
   PublicSubnet2Cidr:
     Type: String
-    Default: 10.0.2.0/24
-
+    Default: 172.16.2.0/24
   PrivateSubnet1Cidr:
     Type: String
-    Default: 10.0.21.0/24   # <--- CHANGED FROM 10.0.11.0/24 TO 10.0.21.0/24
-
+    Default: 172.16.21.0/24
   PrivateSubnet2Cidr:
     Type: String
-    Default: 10.0.22.0/24   # <--- CHANGED FROM 10.0.12.0/24 TO 10.0.22.0/24
+    Default: 172.16.22.0/24
 
 Resources:
   VPC:
@@ -39,12 +35,11 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
-  # --- Public Subnets ---
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1a
+      AvailabilityZone: !Select [0, !GetAZs '']
       CidrBlock: !Ref PublicSubnet1Cidr
       MapPublicIpOnLaunch: true
 
@@ -52,16 +47,15 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1c  # <--- CHANGED FROM eu-north-1b TO eu-north-1c
+      AvailabilityZone: !Select [1, !GetAZs '']
       CidrBlock: !Ref PublicSubnet2Cidr
       MapPublicIpOnLaunch: true
 
-  # --- Private Subnets ---
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1a
+      AvailabilityZone: !Select [0, !GetAZs '']
       CidrBlock: !Ref PrivateSubnet1Cidr
       MapPublicIpOnLaunch: false
 
@@ -69,7 +63,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1c  # <--- CHANGED FROM eu-north-1b TO eu-north-1c
+      AvailabilityZone: !Select [1, !GetAZs '']
       CidrBlock: !Ref PrivateSubnet2Cidr
       MapPublicIpOnLaunch: false
 
