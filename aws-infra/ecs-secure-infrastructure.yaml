@@ -265,7 +265,7 @@ Resources:
   TaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: ecsTaskExecutionRole-Secure
+      #RoleName: ecsTaskExecutionRole-Secure
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
