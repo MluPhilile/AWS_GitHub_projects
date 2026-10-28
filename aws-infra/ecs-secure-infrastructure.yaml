@@ -5,18 +5,22 @@ Parameters:
   VpcCidr:
     Type: String
     Default: 10.0.0.0/16
+
   PublicSubnet1Cidr:
     Type: String
     Default: 10.0.1.0/24
+
   PublicSubnet2Cidr:
     Type: String
     Default: 10.0.2.0/24
+
   PrivateSubnet1Cidr:
     Type: String
-    Default: 10.0.11.0/24
+    Default: 10.0.21.0/24   # <--- CHANGED FROM 10.0.11.0/24 TO 10.0.21.0/24
+
   PrivateSubnet2Cidr:
     Type: String
-    Default: 10.0.12.0/24
+    Default: 10.0.22.0/24   # <--- CHANGED FROM 10.0.12.0/24 TO 10.0.22.0/24
 
 Resources:
   VPC:
@@ -68,7 +72,7 @@ Resources:
       AvailabilityZone: eu-north-1c  # <--- CHANGED FROM eu-north-1b TO eu-north-1c
       CidrBlock: !Ref PrivateSubnet2Cidr
       MapPublicIpOnLaunch: false
-      
+
   NatEip1:
     Type: AWS::EC2::EIP
     DependsOn: VpcGatewayAttachment
