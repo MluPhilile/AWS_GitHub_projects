@@ -1,7 +1,12 @@
 name: ECS Infrastructure Provisioning
 
 on:
-  workflow_dispatch: # Allows you to manually trigger this run from the Actions tab
+  workflow_dispatch: 
+
+# 1. Required permissions block to allow OIDC token generation
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   provision:
@@ -10,18 +15,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Authenticate securely via OIDC using your IAM Role
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::942715741252:role/GitHubActionsWorkflowRole
           aws-region: eu-north-1
 
-      - name: Deploy ECS Infrastructure
+      # 3. Corrected deployment (splitting the two templates into explicit steps)
+      - name: Deploy OIDC Identity Provider Stack
         run: |
           aws cloudformation deploy \
-            --stack-name oidc-provider-name \
+            --stack-name oidc-provider-infra \
             --template-file aws-infra/github-oidc-iam-role.yaml \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --region eu-north-1
+
+      - name: Deploy ECS Infrastructure Stack
+        run: |
+          aws cloudformation deploy \
             --stack-name ecs-infra \
             --template-file aws-infra/ecs-secure-infrastructure.yaml \
             --capabilities CAPABILITY_NAMED_IAM \
@@ -34,6 +46,7 @@ jobs:
                 --output table && \
               exit 1 \
             )
+
 #Use code with caution.
 
 #Next Steps to Trigger the Run:
