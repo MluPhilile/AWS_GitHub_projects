@@ -35,11 +35,12 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
+  # --- Public Subnets ---
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [0, !GetAZs '']
+      AvailabilityZone: eu-north-1a  # <--- CHANGED TO EXPLICIT STRING
       CidrBlock: !Ref PublicSubnet1Cidr
       MapPublicIpOnLaunch: true
 
@@ -47,15 +48,16 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [1, !GetAZs '']
+      AvailabilityZone: eu-north-1b  # <--- CHANGED TO EXPLICIT STRING
       CidrBlock: !Ref PublicSubnet2Cidr
       MapPublicIpOnLaunch: true
 
+  # --- Private Subnets ---
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [0, !GetAZs '']
+      AvailabilityZone: eu-north-1a  # <--- CHANGED TO EXPLICIT STRING
       CidrBlock: !Ref PrivateSubnet1Cidr
       MapPublicIpOnLaunch: false
 
@@ -63,10 +65,10 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: !Select [1, !GetAZs '']
+      AvailabilityZone: eu-north-1b  # <--- CHANGED TO EXPLICIT STRING
       CidrBlock: !Ref PrivateSubnet2Cidr
       MapPublicIpOnLaunch: false
-
+      
   NatEip1:
     Type: AWS::EC2::EIP
     DependsOn: VpcGatewayAttachment
