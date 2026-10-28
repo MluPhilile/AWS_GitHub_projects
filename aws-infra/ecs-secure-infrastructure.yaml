@@ -68,7 +68,7 @@ Resources:
       AvailabilityZone: eu-north-1b  # <--- CHANGED TO EXPLICIT STRING
       CidrBlock: !Ref PrivateSubnet2Cidr
       MapPublicIpOnLaunch: false
-      
+
   NatEip1:
     Type: AWS::EC2::EIP
     DependsOn: VpcGatewayAttachment
@@ -106,26 +106,31 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGateway1
 
+  # --- Route Table Associations ---
   PublicSubnet1Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: PublicRoute  # <--- FORCES TIMING ORDER RULE
     Properties:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable
 
   PublicSubnet2Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: PublicRoute  # <--- FORCES TIMING ORDER RULE
     Properties:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
 
   PrivateSubnet1Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: PrivateRoute1  # <--- FORCES TIMING ORDER RULE FOR NAT
     Properties:
       SubnetId: !Ref PrivateSubnet1
       RouteTableId: !Ref PrivateRouteTable1
 
   PrivateSubnet2Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    DependsOn: PrivateRoute1  # <--- FORCES TIMING ORDER RULE FOR NAT
     Properties:
       SubnetId: !Ref PrivateSubnet2
       RouteTableId: !Ref PrivateRouteTable1
