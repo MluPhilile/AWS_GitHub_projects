@@ -35,12 +35,11 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
-  # --- Public Subnets ---
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1a  # <--- CHANGED TO EXPLICIT STRING
+      AvailabilityZone: eu-north-1a
       CidrBlock: !Ref PublicSubnet1Cidr
       MapPublicIpOnLaunch: true
 
@@ -48,16 +47,15 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1b  # <--- CHANGED TO EXPLICIT STRING
+      AvailabilityZone: eu-north-1b
       CidrBlock: !Ref PublicSubnet2Cidr
       MapPublicIpOnLaunch: true
 
-  # --- Private Subnets ---
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1a  # <--- CHANGED TO EXPLICIT STRING
+      AvailabilityZone: eu-north-1a
       CidrBlock: !Ref PrivateSubnet1Cidr
       MapPublicIpOnLaunch: false
 
@@ -65,7 +63,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId: !Ref VPC
-      AvailabilityZone: eu-north-1b  # <--- CHANGED TO EXPLICIT STRING
+      AvailabilityZone: eu-north-1b
       CidrBlock: !Ref PrivateSubnet2Cidr
       MapPublicIpOnLaunch: false
 
@@ -106,31 +104,30 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGateway1
 
-  # --- Route Table Associations ---
   PublicSubnet1Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PublicRoute  # <--- FORCES TIMING ORDER RULE
+    DependsOn: PublicRoute
     Properties:
       SubnetId: !Ref PublicSubnet1
       RouteTableId: !Ref PublicRouteTable
 
   PublicSubnet2Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PublicRoute  # <--- FORCES TIMING ORDER RULE
+    DependsOn: PublicRoute
     Properties:
       SubnetId: !Ref PublicSubnet2
       RouteTableId: !Ref PublicRouteTable
 
   PrivateSubnet1Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PrivateRoute1  # <--- FORCES TIMING ORDER RULE FOR NAT
+    DependsOn: PrivateRoute1
     Properties:
       SubnetId: !Ref PrivateSubnet1
       RouteTableId: !Ref PrivateRouteTable1
 
   PrivateSubnet2Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PrivateRoute1  # <--- FORCES TIMING ORDER RULE FOR NAT
+    DependsOn: PrivateRoute1
     Properties:
       SubnetId: !Ref PrivateSubnet2
       RouteTableId: !Ref PrivateRouteTable1
@@ -171,7 +168,7 @@ Resources:
 
   AlbTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    DependsOn: 
+    DependsOn:
       - PublicSubnet1Association
       - PublicSubnet2Association
       - PrivateSubnet1Association
@@ -203,13 +200,9 @@ Resources:
 
   DevCluster:
     Type: AWS::ECS::Cluster
-    Properties:
-      ClusterName: dev-cluster
 
   StagingCluster:
     Type: AWS::ECS::Cluster
-    Properties:
-      ClusterName: staging-cluster
   
   TaskExecutionRole:
     Type: AWS::IAM::Role
@@ -220,7 +213,7 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              Service: 'ecs-tasks.amazonaws.com'
+              Service: 'ecs.tasks.amazonaws.com'
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
