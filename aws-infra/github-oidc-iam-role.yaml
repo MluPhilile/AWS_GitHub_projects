@@ -72,7 +72,7 @@ Resources:
                   - cloudformation:DescribeStackResources
                   - cloudformation:GetTemplate
                   - cloudformation:ValidateTemplate
-                Resource: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/ecs-infra/*'
+                Resource: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/ecs-infra*'
 
               # Fine-Grained Infrastructure Resource Manipulation via Pipeline
               - Effect: Allow
