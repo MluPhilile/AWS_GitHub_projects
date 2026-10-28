@@ -5,48 +5,29 @@ Parameters:
   VpcCidr:
     Type: String
     Default: 10.0.0.0/16
-    Description: The IP range (CIDR block) for the entire VPC
-
   PublicSubnet1Cidr:
     Type: String
     Default: 10.0.1.0/24
-    Description: CIDR block for public subnet 1 (ALB Zone A)
-
   PublicSubnet2Cidr:
     Type: String
     Default: 10.0.2.0/24
-    Description: CIDR block for public subnet 2 (ALB Zone B)
-
   PrivateSubnet1Cidr:
     Type: String
     Default: 10.0.11.0/24
-    Description: CIDR block for private subnet 1 (ECS Task Zone A)
-
   PrivateSubnet2Cidr:
     Type: String
     Default: 10.0.12.0/24
-    Description: CIDR block for private subnet 2 (ECS Task Zone B)
 
 Resources:
-  # ==========================================================================
-  # NETWORKING INFRASTRUCTURE (VPC, IGW, NAT Gateways)
-  # ==========================================================================
   VPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: !Ref VpcCidr
       EnableDnsSupport: true
       EnableDnsHostnames: true
-      Tags:
-        - Key: Name
-          Value: ecs-secure-vpc
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: ecs-igw
 
   VpcGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -54,7 +35,6 @@ Resources:
       VpcId: !Ref VPC
       InternetGatewayId: !Ref InternetGateway
 
-  # --- Public Subnets (For ALB) ---
   PublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -62,9 +42,6 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs '']
       CidrBlock: !Ref PublicSubnet1Cidr
       MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: ecs-public-subnet-1
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -73,11 +50,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs '']
       CidrBlock: !Ref PublicSubnet2Cidr
       MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: ecs-public-subnet-2
 
-  # --- Private Subnets (Isolated Zone for ECS Flask Containers) ---
   PrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
@@ -85,9 +58,6 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs '']
       CidrBlock: !Ref PrivateSubnet1Cidr
       MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: ecs-private-subnet-1
 
   PrivateSubnet2:
     Type: AWS::EC2::Subnet
@@ -96,11 +66,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs '']
       CidrBlock: !Ref PrivateSubnet2Cidr
       MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: ecs-private-subnet-2
 
-  # --- NAT Gateway Dependencies (Static IPs for outbound updates) ---
   NatEip1:
     Type: AWS::EC2::EIP
     DependsOn: VpcGatewayAttachment
@@ -112,18 +78,11 @@ Resources:
     Properties:
       AllocationId: !GetAtt NatEip1.AllocationId
       SubnetId: !Ref PublicSubnet1
-      Tags:
-        - Key: Name
-          Value: ecs-nat-gw-1
 
-  # --- Route Tables ---
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: ecs-public-rt
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -137,9 +96,6 @@ Resources:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: ecs-private-rt-1
 
   PrivateRoute1:
     Type: AWS::EC2::Route
@@ -148,7 +104,6 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGateway1
 
-  # --- Route Table Associations ---
   PublicSubnet1Association:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -173,10 +128,6 @@ Resources:
       SubnetId: !Ref PrivateSubnet2
       RouteTableId: !Ref PrivateRouteTable1
 
-
-  # ==========================================================================
-  # FIREWALL LAYER (Security Groups)
-  # ==========================================================================
   AlbSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -187,9 +138,6 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: alb-perimeter-sg
 
   EcsTaskSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -200,15 +148,8 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Ref AlbSecurityGroup  # <--- CRITICAL CHAINING
-      Tags:
-        - Key: Name
-          Value: ecs-task-isolated-sg
+          SourceSecurityGroupId: !Ref AlbSecurityGroup
 
-
-  # ==========================================================================
-  # APPLICATION LOAD BALANCER COMPONENT LAYER
-  # ==========================================================================
   AppLoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -248,10 +189,6 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup
 
-
-  # ==========================================================================
-  # ECS CLUSTERS, CORE COMPUTATION, AND LOGICAL SERVICES
-  # ==========================================================================
   DevCluster:
     Type: AWS::ECS::Cluster
     Properties:
@@ -265,13 +202,13 @@ Resources:
   TaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      #RoleName: ecsTaskExecutionRole-Secure
+      Description: Execution role allowing ECS agents to pull images from GHCR
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
           - Effect: Allow
             Principal:
-              Service: ecs-tasks.amazonaws.com
+              Service: ://amazonaws.com
             Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
@@ -307,7 +244,7 @@ Resources:
           TargetGroupArn: !Ref AlbTargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED  # <--- ISOLATED SECURE CONTAINER
+          AssignPublicIp: DISABLED
           Subnets:
             - !Ref PrivateSubnet1
             - !Ref PrivateSubnet2
@@ -329,7 +266,7 @@ Resources:
           TargetGroupArn: !Ref AlbTargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
-          AssignPublicIp: DISABLED  # <--- ISOLATED SECURE CONTAINER
+          AssignPublicIp: DISABLED
           Subnets:
             - !Ref PrivateSubnet1
             - !Ref PrivateSubnet2
@@ -340,3 +277,4 @@ Outputs:
   WebApplicationUrl:
     Description: The public entry-point URL for your secure network deployment
     Value: !Sub 'http://${AppLoadBalancer.DNSName}'
+Use code with caution.
