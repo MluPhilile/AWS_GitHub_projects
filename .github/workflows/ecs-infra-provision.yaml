@@ -24,5 +24,5 @@ jobs:
         run: |
           aws cloudformation deploy \
             --stack-name ecs-infra \
-            --template-file aws-infra/ecs-infrastructure.yaml \
+            --template-file aws-infra/ecs-secure-infrastructure.yaml \
             --capabilities CAPABILITY_NAMED_IAM
